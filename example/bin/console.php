@@ -23,7 +23,7 @@ use Symfony\Component\Console\Application;
  * file that was distributed with this source code.
  */
 /** @var EntityManager $em */
-$em = include __DIR__.'/../em.php';
+include __DIR__.'/../em.php';
 
 $entityManagerProvider = new SingleManagerProvider($em);
 

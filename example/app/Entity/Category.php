@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Entity\Repository\CategoryRepository;
+use App\Listener\CategoryTitleChangedListener;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -24,11 +26,15 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Entity(repositoryClass="App\Entity\Repository\CategoryRepository")
  *
  * @Gedmo\TranslationEntity(class="App\Entity\CategoryTranslation")
+ *
+ * @Gedmo\Loggable(logEntryClass="App\Entity\LogEntry")
  */
 #[Gedmo\Tree(type: 'nested')]
 #[ORM\Table(name: 'ext_categories')]
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[ORM\EntityListeners([CategoryTitleChangedListener::class])]
 #[Gedmo\TranslationEntity(class: CategoryTranslation::class)]
+#[Gedmo\Loggable(logEntryClass: LogEntry::class)]
 class Category
 {
     /**
@@ -47,8 +53,11 @@ class Category
      * @Gedmo\Translatable
      *
      * @ORM\Column(length=64)
+     *
+     * @Gedmo\Versioned
      */
     #[Gedmo\Translatable]
+    #[Gedmo\Versioned]
     #[ORM\Column(length: 64)]
     private $title;
 

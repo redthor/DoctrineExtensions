@@ -27,7 +27,7 @@ use Gedmo\Timestampable\TimestampableListener;
 use Gedmo\Translatable\TranslatableListener;
 use Gedmo\Tree\TreeListener;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
-
+use App\Listener\CategoryTitleChangedListener;
 /*
  * This file is part of the Doctrine Behavioral Extensions package.
  * (c) Gediminas Morkevicius <gediminas.morkevicius@gmail.com> http://www.gediminasm.org
@@ -45,7 +45,7 @@ $connection = [
     'host' => '127.0.0.1',
     'port' => 3306,
     'user' => 'root',
-    'password' => null,
+    'password' => 'root',
     'dbname' => 'doctrine_extensions_example',
     'driver' => 'pdo_mysql',
     'charset' => 'utf8mb4',
@@ -100,7 +100,7 @@ DoctrineExtensions::registerAbstractMappingIntoDriverChainORM(
 if (PHP_VERSION_ID >= 80000) {
     $mappingDriver->addDriver(
         new AttributeDriver(
-            [__DIR__.'/app/Entity']
+            [__DIR__.'/app/Entity', __DIR__.'/app/Listener']
         ),
         'App\Entity'
     );
@@ -108,7 +108,7 @@ if (PHP_VERSION_ID >= 80000) {
     $mappingDriver->addDriver(
         new AnnotationDriver(
             $annotationReader,
-            [__DIR__.'/app/Entity']
+            [__DIR__.'/app/Entity', __DIR__.'/app/Listener']
         ),
         'App\Entity'
     );
@@ -130,11 +130,11 @@ $treeListener->setCacheItemPool($cache);
 $eventManager->addEventSubscriber($treeListener);
 
 // Loggable extension, not used in example
-// $loggableListener = new Gedmo\Loggable\LoggableListener;
-// $loggableListener->setAnnotationReader($extensionReader);
-// $loggableListener->setCacheItemPool($cache);
-// $loggableListener->setUsername('admin');
-// $eventManager->addEventSubscriber($loggableListener);
+$loggableListener = new Gedmo\Loggable\LoggableListener;
+$loggableListener->setAnnotationReader($extensionReader);
+$loggableListener->setCacheItemPool($cache);
+$loggableListener->setUsername('admin');
+$eventManager->addEventSubscriber($loggableListener);
 
 // Timestampable extension
 $timestampableListener = new TimestampableListener();
@@ -175,6 +175,9 @@ $config->setMetadataDriverImpl($mappingDriver);
 $config->setMetadataCache($cache);
 $config->setQueryCache($cache);
 $config->setResultCache($cache);
+$config->getEntityListenerResolver()->register(new CategoryTitleChangedListener());
+
+\Doctrine\DBAL\Types\Type::addType('uuid', 'Ramsey\Uuid\Doctrine\UuidType');
 
 // Finally, we create the entity manager
 $connection = DriverManager::getConnection($connection, $config);

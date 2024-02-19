@@ -94,12 +94,20 @@ final class PrintCategoryTranslationTreeCommand extends Command
 
         // Build the tree in English
         $output->writeln('English:');
-        $output->writeln($repository->buildTree($query->getArrayResult(), $treeDecorationOptions));
+        $categories = $query->getResult();
+        $result = $query->getArrayResult();
+        $output->writeln($repository->buildTree($result, $treeDecorationOptions));
 
         // Change the locale and build the tree in Lithuanian
         $query->setHint(TranslatableListener::HINT_TRANSLATABLE_LOCALE, 'lt');
         $output->writeln('Lithuanian:');
         $output->writeln($repository->buildTree($query->getArrayResult(), $treeDecorationOptions));
+
+        $cat = $categories[0];
+        /** @var $cat Category */
+        $cat->setTitle(uniqid());
+        $em->persist($cat);
+        $em->flush();
 
         return 0;
     }
